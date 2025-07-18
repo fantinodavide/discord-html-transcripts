@@ -25,7 +25,7 @@
     "discord-html-transcripts",
     "discord-transcripts"
   ],
-  "author": "Derock <derock@derock.dev>",
+  "author": "fantinodavide <fantinodavide@users.noreply.github.com>",
   "license": "GNU GPLv3",
   "files": [
     "dist/**/*.js",
