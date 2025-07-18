@@ -1,4 +1,4 @@
-import type { AttachmentBuilder, Message } from 'discord.js';
+import { AttachmentBuilder, Message, MessageFlags } from 'discord.js';
 import type { RenderMessageContext } from './generator';
 
 export type AttachmentTypes = 'audio' | 'video' | 'image' | 'file';
@@ -80,3 +80,71 @@ export type CreateTranscriptOptions<T extends ExportReturnType> = Partial<
     filter: (message: Message<boolean>) => boolean;
   }
 >;
+
+// Discord Components V2 types
+export enum ComponentV2Type {
+  Section = 11,
+  Container = 12,
+  Separator = 13,
+  TextDisplay = 14,
+  Thumbnail = 15,
+  MediaGallery = 16,
+}
+
+export interface ComponentV2Base {
+  type: ComponentV2Type;
+}
+
+export interface SectionComponent extends ComponentV2Base {
+  type: ComponentV2Type.Section;
+  text?: {
+    content: string;
+    style?: 'paragraph' | 'heading1' | 'heading2' | 'heading3';
+  };
+  accessory?: ComponentV2;
+}
+
+export interface ContainerComponent extends ComponentV2Base {
+  type: ComponentV2Type.Container;
+  children: ComponentV2[];
+  accent_color?: string;
+}
+
+export interface SeparatorComponent extends ComponentV2Base {
+  type: ComponentV2Type.Separator;
+  spacing?: 'small' | 'medium' | 'large';
+}
+
+export interface TextDisplayComponent extends ComponentV2Base {
+  type: ComponentV2Type.TextDisplay;
+  content: string;
+  style?: 'paragraph' | 'heading1' | 'heading2' | 'heading3';
+}
+
+export interface ThumbnailComponent extends ComponentV2Base {
+  type: ComponentV2Type.Thumbnail;
+  url: string;
+  alt_text?: string;
+}
+
+export interface MediaGalleryComponent extends ComponentV2Base {
+  type: ComponentV2Type.MediaGallery;
+  items: Array<{
+    url: string;
+    alt_text?: string;
+    type: 'image' | 'video';
+  }>;
+}
+
+export type ComponentV2 =
+  | SectionComponent
+  | ContainerComponent
+  | SeparatorComponent
+  | TextDisplayComponent
+  | ThumbnailComponent
+  | MediaGalleryComponent;
+
+// Utility function to check if a message uses Components V2
+export function isComponentsV2Message(message: Message): boolean {
+  return Boolean(message.flags?.has(MessageFlags.IsComponentsV2));
+}

@@ -1,6 +1,6 @@
 import { DiscordAttachment, DiscordAttachments } from '@derockdev/discord-components-react';
 import React from 'react';
-import type { APIAttachment, APIMessage, Attachment as AttachmentType, Message } from 'discord.js';
+import type { Attachment as AttachmentType, Message } from 'discord.js';
 import type { RenderMessageContext } from '..';
 import type { AttachmentTypes } from '../../types';
 import { formatBytes } from '../../utils/utils';
@@ -11,7 +11,7 @@ import { formatBytes } from '../../utils/utils';
  * @param context
  * @returns
  */
-export async function Attachments(props: { message: Message; context: RenderMessageContext }) {
+export function Attachments(props: { message: Message; context: RenderMessageContext }) {
   if (props.message.attachments.size === 0) return <></>;
 
   return (
@@ -34,10 +34,8 @@ function getAttachmentType(attachment: AttachmentType): AttachmentTypes {
  * Renders one Discord Attachment
  * @param props - the attachment and rendering context
  */
-export async function Attachment({
+export function Attachment({
   attachment,
-  context,
-  message,
 }: {
   attachment: AttachmentType;
   context: RenderMessageContext;
@@ -50,17 +48,17 @@ export async function Attachment({
 
   const type = getAttachmentType(attachment);
 
-  // if the attachment is an image, download it to a data url
-  if (type === 'image') {
-    const downloaded = await context.callbacks.resolveImageSrc(
-      attachment.toJSON() as APIAttachment,
-      message.toJSON() as APIMessage
-    );
-
-    if (downloaded !== null) {
-      url = downloaded ?? url;
-    }
-  }
+  // For now, use original URL. In a real implementation, you'd want to
+  // resolve image URLs before rendering or use a different approach
+  // if (type === 'image') {
+  //   const downloaded = await context.callbacks.resolveImageSrc(
+  //     attachment.toJSON() as APIAttachment,
+  //     message.toJSON() as APIMessage
+  //   );
+  //   if (downloaded !== null) {
+  //     url = downloaded ?? url;
+  //   }
+  // }
 
   return (
     <DiscordAttachment

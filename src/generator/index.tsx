@@ -6,7 +6,7 @@ import { revealSpoiler, scrollToMessage } from '../static/client';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { renderToString } from '@derockdev/discord-components-core/hydrate';
-import { streamToString } from '../utils/utils';
+// import { Readable } from 'stream';
 import DiscordMessages from './transcript';
 import type { ResolveImageCallback } from '../downloader/images';
 
@@ -39,11 +39,10 @@ export type RenderMessageContext = {
 };
 
 export default async function render({ messages, channel, callbacks, ...options }: RenderMessageContext) {
-  const profiles = buildProfiles(messages);
+  const profiles = await buildProfiles(messages);
 
-  // NOTE: this renders a STATIC site with no interactivity
-  // if interactivity is needed, switch to renderToPipeableStream and use hydrateRoot on client.
-  const stream = ReactDOMServer.renderToStaticNodeStream(
+  // Create the React element
+  const element = (
     <html>
       <head>
         <meta charSet="utf-8" />
@@ -77,7 +76,7 @@ export default async function render({ messages, channel, callbacks, ...options 
             {/* profiles */}
             <script
               dangerouslySetInnerHTML={{
-                __html: `window.$discordMessage={profiles:${JSON.stringify(await profiles)}}`,
+                __html: `window.$discordMessage={profiles:${JSON.stringify(profiles)}}`,
               }}
             ></script>
             {/* component library */}
@@ -103,13 +102,14 @@ export default async function render({ messages, channel, callbacks, ...options 
     </html>
   );
 
-  const markup = await streamToString(stream);
+  // Use renderToString instead of deprecated renderToStaticNodeStream
+  const markup = ReactDOMServer.renderToString(element);
 
   if (options.hydrate) {
     const result = await renderToString(markup, {
       beforeHydrate: async (document) => {
         document.defaultView.$discordMessage = {
-          profiles: await profiles,
+          profiles: profiles,
         };
       },
     });

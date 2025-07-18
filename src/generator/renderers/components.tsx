@@ -13,13 +13,14 @@ export default function ComponentRow({ row, id }: { row: ActionRow<MessageAction
   );
 }
 
-const ButtonStyleMapping = {
+const ButtonStyleMapping: Record<ButtonStyle, 'primary' | 'secondary' | 'success' | 'destructive'> = {
   [ButtonStyle.Primary]: 'primary',
   [ButtonStyle.Secondary]: 'secondary',
   [ButtonStyle.Success]: 'success',
   [ButtonStyle.Danger]: 'destructive',
   [ButtonStyle.Link]: 'secondary',
-} as const;
+  [ButtonStyle.Premium]: 'secondary',
+};
 
 export function Component({ component, id }: { component: MessageActionRowComponent; id: number }) {
   if (component.type === ComponentType.Button) {

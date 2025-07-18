@@ -1,7 +1,8 @@
 import * as discord from 'discord.js';
-import { createTranscript } from '../src';
+import { createTranscript, ExportReturnType } from '../src';
 
 import { config } from 'dotenv';
+import { writeFileSync } from 'fs';
 config();
 
 const { GuildMessages, Guilds, MessageContent } = discord.GatewayIntentBits;
@@ -23,14 +24,19 @@ client.on('ready', async () => {
 
   const attachment = await createTranscript(channel, {
     // options go here
+    returnType: ExportReturnType.String
   });
+
+  console.log(attachment)
+  
+  writeFileSync('transcript.html', attachment)
 
   console.timeEnd('transcript');
 
-  await (channel as discord.TextChannel).send({
-    content: 'Here is the transcript',
-    files: [attachment],
-  });
+  // await (channel as discord.TextChannel).send({
+  //   content: 'Here is the transcript',
+  //   files: [attachment],
+  // });
 
   client.destroy();
   process.exit(0);
