@@ -22,3 +22,43 @@ p {
   font-weight: 400;
   line-height: 1.375;
 }
+
+.discord-message-content {
+  width: auto !important;
+}
+
+discord-spoiler {
+  color: inherit !important;
+  background-color: inherit !important;
+  position: relative;
+}
+
+discord-spoiler::after {
+  content: '';
+  transition: all 200ms ease-in-out !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 999;
+  background-color: #777 !important;
+  border-radius: 4px;
+}
+
+discord-spoiler.discord-spoiler--revealed::after {
+  z-index: 0;
+  background-color: #7772 !important;
+}
+
+span.subtext {
+  font-size: 0.75rem !important;
+}
+
+.discord-code-block-pre--multiline {
+    border: 1px solid #CCC2 !important;
+}
+
+.discord-code-block-pre {
+    background-color: #6662 !important;
+}

@@ -9,6 +9,8 @@ import { renderToString } from '@derockdev/discord-components-core/hydrate';
 // import { Readable } from 'stream';
 import DiscordMessages from './transcript';
 import type { ResolveImageCallback } from '../downloader/images';
+import postcss from 'postcss';
+import cssnano from 'cssnano';
 
 // read the package.json file and get the @derockdev/discord-components-core version
 let discordComponentsVersion = '^3.6.1';
@@ -16,9 +18,9 @@ let discordComponentsVersion = '^3.6.1';
 try {
   const packagePath = path.join(__dirname, '..', '..', 'package.json');
   const packageJSON = JSON.parse(readFileSync(packagePath, 'utf8'));
-  discordComponentsVersion = packageJSON.dependencies['@derockdev/discord-components-core'] ?? discordComponentsVersion;
+  discordComponentsVersion = packageJSON.dependencies[ '@derockdev/discord-components-core' ] ?? discordComponentsVersion;
   // eslint-disable-next-line no-empty
-} catch {} // ignore errors
+} catch { } // ignore errors
 
 export type RenderMessageContext = {
   messages: Message[];
@@ -42,6 +44,10 @@ export type RenderMessageContext = {
 export default async function render({ messages, channel, callbacks, ...options }: RenderMessageContext) {
   const profiles = await buildProfiles(messages);
 
+  const cssContent = readFileSync(path.join(__dirname, '../style/index.css'), 'utf8');
+  const minifiedCSS = await postcss([ cssnano ]).process(cssContent, { from: undefined });
+
+
   // Create the React element
   const element = (
     <html>
@@ -49,7 +55,7 @@ export default async function render({ messages, channel, callbacks, ...options 
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <style dangerouslySetInnerHTML={{ __html: readFileSync(path.join(__dirname, '../style/index.css'), 'utf8') }} />
+        <style dangerouslySetInnerHTML={{ __html: minifiedCSS.css }} />
 
         {/* favicon */}
         <link
