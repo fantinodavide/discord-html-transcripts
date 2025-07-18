@@ -10,7 +10,7 @@ import {
   DiscordTime,
   DiscordUnderlined,
 } from '@derockdev/discord-components-react';
-import parse, { type RuleTypesExtended } from 'discord-markdown-parser';
+import { type RuleTypesExtended } from 'discord-markdown-parser';
 import { ChannelType, type APIMessageComponentEmoji } from 'discord.js';
 import React from 'react';
 import type { ASTNode } from 'simple-markdown';
@@ -18,6 +18,12 @@ import { ASTNode as MessageASTNodes } from 'simple-markdown';
 import type { SingleASTNode } from 'simple-markdown';
 import type { RenderMessageContext } from '../';
 import { parseDiscordEmoji } from '../../utils/utils';
+import MarkdownIt from 'markdown-it';
+import parseHTML from 'html-react-parser';
+// @ts-ignore
+import { discordInlinePlugin } from './markdown-it-discord-inline';
+import type { Element } from 'domhandler'; // html-react-parser re-exports these
+import { isTag, isText } from 'domhandler';
 
 export enum RenderType {
   EMBED,
@@ -34,6 +40,47 @@ type RenderContentContext = RenderMessageContext & {
   };
 };
 
+// @ts-ignore
+function htmlToReact(html: string): React.ReactNode {
+  return parseHTML(html, {
+    replace(dom) {
+      // 1. Ignore non-elements (text nodes, comments, etc.)
+      if (!isTag(dom)) return undefined;
+
+      // 2. Now `dom` is guaranteed to be an Element
+      const el = dom as Element;
+
+      switch (el.name) {
+        case 'discord-bold':
+          return <DiscordBold>{el.children.map(c => (isText(c) ? c.data : '')).join('')}</DiscordBold>;
+        case 'discord-italic':
+          return <DiscordItalic>{el.children.map(c => (isText(c) ? c.data : '')).join('')}</DiscordItalic>;
+        case 'discord-underline':
+          return <DiscordUnderlined>{el.children.map(c => (isText(c) ? c.data : '')).join('')}</DiscordUnderlined>;
+        case 'discord-strikethrough':
+          return <s>{el.children.map(c => (isText(c) ? c.data : '')).join('')}</s>;
+        case 'discord-inline-code':
+          return <DiscordInlineCode>{el.children.map(c => (isText(c) ? c.data : '')).join('')}</DiscordInlineCode>;
+        case 'discord-code-block':
+          return (
+            <DiscordCodeBlock
+              language={el.attribs.language || ''}
+              code={el.children.map(c => (isText(c) ? c.data : '')).join('')}
+            />
+          );
+        case 'discord-mention':
+          return (
+            <DiscordMention type={el.attribs.type as any} id={el.attribs.id} color={el.attribs.color}>
+              {el.attribs.id}
+            </DiscordMention >
+          );
+        default:
+          return undefined;
+      }
+    },
+  });
+}
+
 /**
  * Renders discord markdown content
  * @param content - The content to render
@@ -44,10 +91,7 @@ export default function MessageContent({ content, context }: { content: string; 
   if (context.type === RenderType.REPLY && content.length > 180) content = content.slice(0, 180) + '...';
 
   // parse the markdown
-  const parsed = parse(
-    content,
-    context.type === RenderType.EMBED || context.type === RenderType.WEBHOOK ? 'extended' : 'normal'
-  );
+  const parsed = [ { content, type: 'text' } ];
 
   // check if the parsed content is only emojis
   const isOnlyEmojis = parsed.every(
@@ -65,7 +109,6 @@ export default function MessageContent({ content, context }: { content: string; 
 
   return <MessageASTNodes nodes={parsed} context={context} />;
 }
-
 // This function can probably be combined into the MessageSingleASTNode function
 function MessageASTNodes({
   nodes,
@@ -90,26 +133,21 @@ function MessageASTNodes({
 export function MessageSingleASTNode({ node, context }: { node: SingleASTNode; context: RenderContentContext }) {
   if (!node) return null;
 
+  const md = new MarkdownIt('zero')
+    .enable([ 'heading', 'emphasis', 'link', 'autolink', 'strikethrough' ])
+    .use(discordInlinePlugin, context);
+
   const type = node.type as RuleTypesExtended;
 
   switch (type) {
-    case 'text':
-      return node.content;
-
-    case 'link':
-      return (
-        <a href={node.target}>
-          <MessageASTNodes nodes={node.content} context={context} />
-        </a>
-      );
-
-    case 'url':
-    case 'autolink':
-      return (
-        <a href={node.target} target="_blank" rel="noreferrer">
-          <MessageASTNodes nodes={node.content} context={context} />
-        </a>
-      );
+    case 'text': {
+      const html = md.render(node.content)
+        .replace(/\|\|([^\|]+)\|\|/g, (...match) => `<discord-spoiler>${match[ 1 ]}</discord-spoiler>`)
+        .replace(/\n(?:<p>)?\-\#(.+)\n/gm, (...match) => `<span class="subtext">${match[ 1 ]}</span>`)
+        .replace(/\`\`\`\n?(.+)\n?\`\`\`/gm, (...match) => `<discord-code-block>${match[ 1 ]}</discord-code-block>`)
+        .replace(/\`(.+)\`/g, (...match) => `<discord-inline-code>${match[ 1 ]}</discord-inline-code>`)
+      return htmlToReact(html);
+    }
 
     case 'blockQuote':
       if (context.type === RenderType.REPLY) {
