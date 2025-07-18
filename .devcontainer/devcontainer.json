@@ -24,6 +24,6 @@
     "mounts": [
         "source=discord-html-transcripts_node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
     ],
-    "postCreateCommand": "mkdir -p ${containerWorkspaceFolder}/node_modules && sudo chown -R node:node ${containerWorkspaceFolder}/node_modules",
+    "postCreateCommand": "mkdir -p ${containerWorkspaceFolder}/node_modules && sudo chown -R node:node ${containerWorkspaceFolder}",
     "postStartCommand": "npm install -g pnpm && pnpm install && bash"
 }
