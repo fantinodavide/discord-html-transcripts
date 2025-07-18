@@ -27,7 +27,7 @@ client.on('ready', async () => {
     returnType: ExportReturnType.String
   });
 
-  console.log(attachment)
+  // console.log(attachment)
   
   writeFileSync('transcript.html', attachment)
 
