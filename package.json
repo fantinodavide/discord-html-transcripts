@@ -1,5 +1,5 @@
 {
-  "name": "discord-html-transcripts",
+  "name": "@fantinodavide/discord-html-transcripts",
   "version": "3.2.0",
   "description": "A nicely formatted html transcript generator for discord.js.",
   "main": "dist/index.js",
