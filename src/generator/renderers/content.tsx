@@ -51,11 +51,11 @@ export default function MessageContent({ content, context }: { content: string; 
 
   // check if the parsed content is only emojis
   const isOnlyEmojis = parsed.every(
-    (node) => ['emoji', 'twemoji'].includes(node.type) || (node.type === 'text' && node.content.trim().length === 0)
+    (node) => [ 'emoji', 'twemoji' ].includes(node.type) || (node.type === 'text' && node.content.trim().length === 0)
   );
   if (isOnlyEmojis) {
     // now check if there are less than or equal to 25 emojis
-    const emojis = parsed.filter((node) => ['emoji', 'twemoji'].includes(node.type));
+    const emojis = parsed.filter((node) => [ 'emoji', 'twemoji' ].includes(node.type));
     if (emojis.length <= 25) {
       context._internal = {
         largeEmojis: true,
@@ -129,22 +129,25 @@ export function MessageSingleASTNode({ node, context }: { node: SingleASTNode; c
 
     case 'channel': {
       const id = node.id as string;
-      // For now, render with fallback. In a real implementation, you'd want to
-      // resolve these entities before rendering or use a different approach
+      // Use the resolved channel name from profiles if available
+      const channel = context.profiles?._channels?.[ id ];
+      const isThread = channel && [ ChannelType.PrivateThread, ChannelType.PublicThread, ChannelType.AnnouncementThread ].includes(channel.type);
+      const channelName = channel?.name || `${id}`;
       return (
-        <DiscordMention type="channel">
-          {`<#${id}>`}
+        <DiscordMention type={isThread ? 'thread' : 'channel'}>
+          {`${channelName}`}
         </DiscordMention>
       );
     }
 
     case 'role': {
       const id = node.id as string;
-      // For now, render with fallback. In a real implementation, you'd want to
-      // resolve these entities before rendering or use a different approach
+      // Use the resolved role name from profiles if available
+      const role = context.profiles?._roles?.[ id ];
+      const roleName = role?.name || `${id}`;
       return (
         <DiscordMention type="role">
-          {`<@&${id}>`}
+          {`${roleName}`}
         </DiscordMention>
       );
     }
@@ -152,7 +155,7 @@ export function MessageSingleASTNode({ node, context }: { node: SingleASTNode; c
     case 'user': {
       const id = node.id as string;
       // Use the resolved username from profiles if available, otherwise fallback to ID
-      const profile = context.profiles?.[id];
+      const profile = context.profiles?.[ id ];
       const displayName = profile?.author || `User ${id}`;
       return <DiscordMention type="user">{`${displayName}`}</DiscordMention>;
     }

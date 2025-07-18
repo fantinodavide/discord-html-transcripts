@@ -13,6 +13,8 @@ export type Profile = {
 
 export async function buildProfiles(messages: Message[]) {
   const profiles: Record<string, Profile> = {};
+  const roles: Record<string, any> = {};
+  const channels: Record<string, any> = {};
 
   // loop through messages
   for (const message of messages) {
@@ -40,28 +42,35 @@ export async function buildProfiles(messages: Message[]) {
     }
 
     // extract user mentions from message content and V2 components
-    await extractMentionedUsers(message, profiles);
+    await extractMentionedEntities(message, profiles, roles, channels);
   }
 
-  // return as a JSON
-  return profiles;
+  // return as a JSON with all entity types
+  return {
+    ...profiles,
+    _roles: roles,
+    _channels: channels,
+  };
 }
 
-async function extractMentionedUsers(message: Message, profiles: Record<string, Profile>) {
+async function extractMentionedEntities(
+  message: Message, 
+  profiles: Record<string, Profile>, 
+  roles: Record<string, any>, 
+  channels: Record<string, any>
+) {
   const userMentions = new Set<string>();
+  const roleMentions = new Set<string>();
+  const channelMentions = new Set<string>();
 
   // Extract from regular message content
   if (message.content) {
-    const mentionRegex = /<@!?(\d+)>/g;
-    let match;
-    while ((match = mentionRegex.exec(message.content)) !== null) {
-      userMentions.add(match[1]);
-    }
+    extractMentionsFromText(message.content, userMentions, roleMentions, channelMentions);
   }
 
   // Extract from V2 components
   if (message.components) {
-    extractMentionsFromComponents(message.components, userMentions);
+    extractMentionsFromComponents(message.components, userMentions, roleMentions, channelMentions);
   }
 
   // Resolve mentioned users
@@ -82,21 +91,84 @@ async function extractMentionedUsers(message: Message, profiles: Record<string, 
       }
     }
   }
+
+  // Resolve mentioned roles
+  for (const roleId of roleMentions) {
+    if (!roles[roleId] && message.guild) {
+      try {
+        const role = await message.guild.roles.fetch(roleId);
+        roles[roleId] = {
+          name: role?.name || `Role ${roleId}`,
+          color: role?.hexColor || '#99aab5',
+        };
+      } catch (error) {
+        roles[roleId] = {
+          name: `Role ${roleId}`,
+          color: '#99aab5',
+        };
+      }
+    }
+  }
+
+  // Resolve mentioned channels
+  for (const channelId of channelMentions) {
+    if (!channels[channelId]) {
+      try {
+        const channel = await message.client.channels.fetch(channelId);
+        channels[channelId] = {
+          name: (channel as any)?.name || `Channel ${channelId}`,
+          type: channel?.type || 'text',
+        };
+      } catch (error) {
+        channels[channelId] = {
+          name: `Channel ${channelId}`,
+          type: 'text',
+        };
+      }
+    }
+  }
 }
 
-function extractMentionsFromComponents(components: any[], userMentions: Set<string>) {
+function extractMentionsFromText(
+  text: string, 
+  userMentions: Set<string>, 
+  roleMentions: Set<string>, 
+  channelMentions: Set<string>
+) {
+  // User mentions: <@123> or <@!123>
+  const userRegex = /<@!?(\d+)>/g;
+  let match;
+  while ((match = userRegex.exec(text)) !== null) {
+    userMentions.add(match[1]);
+  }
+
+  // Role mentions: <@&123>
+  const roleRegex = /<@&(\d+)>/g;
+  while ((match = roleRegex.exec(text)) !== null) {
+    roleMentions.add(match[1]);
+  }
+
+  // Channel mentions: <#123>
+  const channelRegex = /<#(\d+)>/g;
+  while ((match = channelRegex.exec(text)) !== null) {
+    channelMentions.add(match[1]);
+  }
+}
+
+function extractMentionsFromComponents(
+  components: any[], 
+  userMentions: Set<string>, 
+  roleMentions: Set<string>, 
+  channelMentions: Set<string>
+) {
   for (const component of components) {
     if (component.data?.content) {
-      const mentionRegex = /<@!?(\d+)>/g;
-      let match;
-      while ((match = mentionRegex.exec(component.data.content)) !== null) {
-        userMentions.add(match[1]);
-      }
+      extractMentionsFromText(component.data.content, userMentions, roleMentions, channelMentions);
     }
     
     // Recursively check nested components
     if (component.components) {
-      extractMentionsFromComponents(component.components, userMentions);
+      extractMentionsFromComponents(component.components, userMentions, roleMentions, channelMentions);
     }
   }
 }
