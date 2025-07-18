@@ -49,6 +49,8 @@ export default async function render({ messages, channel, callbacks, ...options 
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+        <style dangerouslySetInnerHTML={{ __html: readFileSync(path.join(__dirname, '../style/index.css'), 'utf8') }} />
+
         {/* favicon */}
         <link
           rel="icon"
