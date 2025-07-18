@@ -34,6 +34,7 @@
   ],
   "devDependencies": {
     "@types/debug": "^4.1.12",
+    "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.11.17",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
@@ -54,6 +55,8 @@
     "@derockdev/discord-components-core": "^3.6.1",
     "@derockdev/discord-components-react": "^3.6.1",
     "discord-markdown-parser": "~1.1.0",
+    "html-react-parser": "^5.2.6",
+    "markdown-it": "^14.1.0",
     "react": "0.0.0-experimental-6639ed3b3-20240111",
     "react-dom": "0.0.0-experimental-6639ed3b3-20240111",
     "simple-markdown": "^0.7.3",
