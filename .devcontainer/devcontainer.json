@@ -1,0 +1,29 @@
+{
+    "name": "Node.js & TypeScript",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+    "features": {
+        "ghcr.io/devcontainers-extra/features/act:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers-community/npm-features/typescript:1": {
+            "version": "latest"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "jmkrivocapich.drawfolderstructure",
+                "eamodio.gitlens",
+                "stringham.move-ts",
+                "humao.rest-client",
+                "ChakrounAnas.turbo-console-log",
+                "GelinNing.env-parsing-for-nodejs"
+            ]
+        }
+    },
+    "mounts": [
+        "source=discord-html-transcripts_node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+    ],
+    "postCreateCommand": "mkdir -p ${containerWorkspaceFolder}/node_modules && sudo chown -R node:node ${containerWorkspaceFolder}/node_modules",
+    "postStartCommand": "npm install -g pnpm && pnpm install && bash"
+}
