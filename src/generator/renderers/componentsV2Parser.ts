@@ -44,11 +44,11 @@ function parseV2Component(rawComponent: any): ComponentV2 | null {
     switch (componentType) {
       case ComponentType.Container: // ContainerComponent (Discord.js type 17)
         return parseDiscordJsContainer(rawComponent);
-      case 10: // TextDisplayComponent (Discord.js type 10)
+      case ComponentType.TextDisplay: // TextDisplayComponent (Discord.js type 10)
         return parseDiscordJsTextDisplay(rawComponent);
-      case 13: // SeparatorComponent
+      case ComponentType.Separator: // SeparatorComponent
         return parseDiscordJsSeparator(rawComponent);
-      case 1: // ActionRow - handle as container
+      case ComponentType.ActionRow: // ActionRow - handle as container
         return parseDiscordJsActionRow(rawComponent);
       default:
         console.warn(`Unknown Discord.js V2 component type: ${componentType}`);
