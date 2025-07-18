@@ -151,9 +151,10 @@ export function MessageSingleASTNode({ node, context }: { node: SingleASTNode; c
 
     case 'user': {
       const id = node.id as string;
-      // For now, render with fallback. In a real implementation, you'd want to
-      // resolve these entities before rendering or use a different approach
-      return <DiscordMention type="user">{`<@${id}>`}</DiscordMention>;
+      // Use the resolved username from profiles if available, otherwise fallback to ID
+      const profile = context.profiles?.[id];
+      const displayName = profile?.author || `User ${id}`;
+      return <DiscordMention type="user">{`${displayName}`}</DiscordMention>;
     }
 
     case 'here':

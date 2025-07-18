@@ -15,7 +15,7 @@ import { isComponentsV2Message, ComponentV2 } from '../../types';
 import { Attachments } from './attachment';
 import ComponentRow from './components';
 import { ComponentsV2Wrapper } from './componentsV2';
-import { parseV2Components, hasV2Components } from './componentsV2Parser';
+import { parseV2Components } from './componentsV2Parser';
 import MessageContent, { RenderType } from './content';
 import { DiscordEmbed } from './embed';
 import MessageReply from './reply';
@@ -145,36 +145,29 @@ function ComponentsV2Message({ message, context }: { message: MessageType; conte
   // Parse the actual V2 components from the message data
   
   try {
-    // Check if the message has V2 components using our parser
-    if (hasV2Components(message)) {
-      // Parse the V2 components from the message
-      const v2Components = parseV2Components(message.components as any[]);
-      
-      if (v2Components.length > 0) {
-        return (
-          <div className="discord-v2-message-content">
-            {/* Render V2 components */}
-            <ComponentsV2Wrapper components={v2Components} context={context} />
-          </div>
-        );
-      }
-    }
+    // Parse the actual V2 components from the message
+    const v2Components = parseV2Components(message.components as any[]);
     
-    // For testing - create a demo V2 component for bot messages
-    if (message.author.bot) {
-      const testV2Components = createTestV2Components(message);
+    if (v2Components.length > 0) {
       return (
         <div className="discord-v2-message-content">
-          <ComponentsV2Wrapper components={testV2Components} context={context} />
+          <ComponentsV2Wrapper components={v2Components} context={context} />
         </div>
       );
     }
+    
+    // Fallback: create a demo V2 component to show the structure
+    const testV2Components = createTestV2Components(message);
+    return (
+      <div className="discord-v2-message-content">
+        <ComponentsV2Wrapper components={testV2Components} context={context} />
+      </div>
+    );
   } catch (error) {
     console.warn('Failed to parse V2 components:', error);
+    // Fallback to V1 rendering
+    return <ComponentsV1Message message={message} context={context} />;
   }
-
-  // If no V2 components found or parsing failed, fallback to V1 rendering
-  return <ComponentsV1Message message={message} context={context} />;
 }
 
 // Create test V2 components for demonstration

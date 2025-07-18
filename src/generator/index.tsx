@@ -36,6 +36,7 @@ export type RenderMessageContext = {
   saveImages: boolean;
   favicon: 'guild' | string;
   hydrate: boolean;
+  profiles?: Record<string, any>; // Add profiles data for mention resolution
 };
 
 export default async function render({ messages, channel, callbacks, ...options }: RenderMessageContext) {
@@ -94,7 +95,7 @@ export default async function render({ messages, channel, callbacks, ...options 
           minHeight: '100vh',
         }}
       >
-        <DiscordMessages messages={messages} channel={channel} callbacks={callbacks} {...options} />
+        <DiscordMessages messages={messages} channel={channel} callbacks={callbacks} profiles={profiles} {...options} />
       </body>
 
       {/* Make sure the script runs after the DOM has loaded */}

@@ -38,10 +38,67 @@ export async function buildProfiles(messages: Message[]) {
         message.thread.lastMessage.author
       );
     }
+
+    // extract user mentions from message content and V2 components
+    await extractMentionedUsers(message, profiles);
   }
 
   // return as a JSON
   return profiles;
+}
+
+async function extractMentionedUsers(message: Message, profiles: Record<string, Profile>) {
+  const userMentions = new Set<string>();
+
+  // Extract from regular message content
+  if (message.content) {
+    const mentionRegex = /<@!?(\d+)>/g;
+    let match;
+    while ((match = mentionRegex.exec(message.content)) !== null) {
+      userMentions.add(match[1]);
+    }
+  }
+
+  // Extract from V2 components
+  if (message.components) {
+    extractMentionsFromComponents(message.components, userMentions);
+  }
+
+  // Resolve mentioned users
+  for (const userId of userMentions) {
+    if (!profiles[userId]) {
+      try {
+        const user = await message.client.users.fetch(userId);
+        const member = message.guild?.members.cache.get(userId) || 
+                     (message.guild ? await message.guild.members.fetch(userId).catch(() => null) : null);
+        profiles[userId] = buildProfile(member, user);
+      } catch (error) {
+        // If user can't be fetched, create a minimal profile
+        profiles[userId] = {
+          author: `User ${userId}`,
+          bot: false,
+          verified: false,
+        };
+      }
+    }
+  }
+}
+
+function extractMentionsFromComponents(components: any[], userMentions: Set<string>) {
+  for (const component of components) {
+    if (component.data?.content) {
+      const mentionRegex = /<@!?(\d+)>/g;
+      let match;
+      while ((match = mentionRegex.exec(component.data.content)) !== null) {
+        userMentions.add(match[1]);
+      }
+    }
+    
+    // Recursively check nested components
+    if (component.components) {
+      extractMentionsFromComponents(component.components, userMentions);
+    }
+  }
 }
 
 function buildProfile(member: GuildMember | null, author: User) {
