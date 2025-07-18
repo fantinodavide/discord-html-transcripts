@@ -48,8 +48,8 @@ function parseV2Component(rawComponent: any): ComponentV2 | null {
         return parseDiscordJsTextDisplay(rawComponent);
       case ComponentType.Separator: // SeparatorComponent
         return parseDiscordJsSeparator(rawComponent);
-      case ComponentType.ActionRow: // ActionRow - handle as container
-        return parseDiscordJsActionRow(rawComponent);
+      // case ComponentType.ActionRow: // ActionRow - handle as container
+      //   return parseDiscordJsActionRow(rawComponent);
       default:
         console.warn(`Unknown Discord.js V2 component type: ${componentType}`);
         return null;
@@ -185,6 +185,7 @@ function parseDiscordJsSeparator(separatorComponent: any): ComponentV2 {
   };
 }
 
+// @ts-ignore
 function parseDiscordJsActionRow(actionRowComponent: any): ComponentV2 {
   const children: ComponentV2[] = [];
   
