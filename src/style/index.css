@@ -17,7 +17,7 @@ h3 {
 }
 
 p {
-  margin: 0 0 4px;
+  margin: 4px 0;
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.375;
@@ -56,9 +56,35 @@ span.subtext {
 }
 
 .discord-code-block-pre--multiline {
-    border: 1px solid #CCC2 !important;
+  border: 1px solid #CCC2 !important;
 }
 
 .discord-code-block-pre {
-    background-color: #6662 !important;
+  background-color: #6662 !important;
+}
+
+.discord-v2container {
+  overflow: hidden;
+  border: 1px solid #3f4147;
+  border-radius: 10px;
+  padding: 16px;
+  /* background-color: #1113; */
+  background-color: #2f3136;
+  position: relative;
+}
+
+.discord-v2container::after {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 0px;
+  top: 0;
+  left: 0;
+  border-left-width: 4px;
+  border-left-color: inherit;
+  border-left-style: solid;
+}
+
+.discord-message .discord-message-body code {
+  background: none !important;
 }

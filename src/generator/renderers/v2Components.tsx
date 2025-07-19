@@ -15,19 +15,14 @@ export function V2Container({ accentColor, children }: V2ContainerProps) {
   };
 
   const contentStyle: React.CSSProperties = {
-    border: '1px solid #3f4147',
-    borderRadius: '8px',
-    padding: '16px',
-    backgroundColor: '#2f3136',
-    position: 'relative',
     ...(accentColor && {
-      borderLeft: `4px solid ${accentColor}`,
+      borderLeft: `0px solid ${accentColor}`,
     }),
   };
 
   return (
     <div style={containerStyle}>
-      <div style={contentStyle}>
+      <div className="discord-v2container" style={contentStyle}>
         {children}
       </div>
     </div>
@@ -105,11 +100,11 @@ export function V2Separator({ spacing = 'medium' }: V2SeparatorProps) {
 
   return (
     <div style={{ margin: `${getSpacing()} 0` }}>
-      <hr style={{ 
-        border: 'none', 
-        height: '1px', 
+      <hr style={{
+        border: 'none',
+        height: '1px',
         backgroundColor: '#3f4147',
-        margin: 0 
+        margin: 0
       }} />
     </div>
   );
@@ -126,15 +121,15 @@ interface V2SectionProps {
 
 export function V2Section({ text, accessory, context }: V2SectionProps) {
   return (
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'flex-start', 
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-start',
       gap: '12px',
       marginBottom: '8px'
     }}>
       {text && (
         <div style={{ flex: 1 }}>
-          <V2TextDisplay 
+          <V2TextDisplay
             content={text.content}
             style={text.style}
             context={context}
