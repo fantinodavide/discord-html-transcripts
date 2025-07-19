@@ -49,6 +49,7 @@ discord-spoiler::after {
 discord-spoiler.discord-spoiler--revealed::after {
   z-index: 0;
   background-color: #7772 !important;
+  pointer-events: none;
 }
 
 span.subtext {
